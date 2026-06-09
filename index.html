@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Withdrawal Status</title>
+
+<style>
+*{box-sizing:border-box;}
+
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+body{
+  font-family:'Segoe UI',Arial,sans-serif;
+  padding:12px;
+  background:#020617;
+  color:#fff;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:-35%;
+  z-index:-3;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(59,130,246,.35), transparent 30%),
+    radial-gradient(circle at 80% 25%, rgba(34,197,94,.28), transparent 32%),
+    radial-gradient(circle at 50% 85%, rgba(168,85,247,.30), transparent 34%);
+  filter:blur(45px);
+  animation:bgMove 12s ease-in-out infinite alternate;
+}
+
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  background:linear-gradient(135deg,rgba(2,6,23,.94),rgba(15,23,42,.88));
+}
+
+@keyframes bgMove{
+  0%{transform:translate(-3%,-3%) scale(1);}
+  100%{transform:translate(4%,4%) scale(1.08);}
+}
+
+.topIcon{
+  position:fixed;
+  top:12px;
+  right:12px;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.35);
+  background:linear-gradient(135deg,#2563eb,#22c55e);
+  color:white;
+  font-size:19px;
+  z-index:999;
+  cursor:pointer;
+}
+
+.box{
+  width:100%;
+  max-width:760px;
+  margin:68px auto 0;
+  padding:16px;
+  border-radius:26px;
+  background:rgba(255,255,255,.10);
+  backdrop-filter:blur(22px);
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 25px 75px rgba(0,0,0,.45);
+}
+
+h2{
+  margin:0;
+  text-align:center;
+  font-size:clamp(22px,5vw,34px);
+  font-weight:900;
+}
+
+.subTitle{
+  text-align:center;
+  color:#cbd5e1;
+  font-size:13px;
+  margin:7px 0 18px;
+}
+
+.searchArea{
+  margin-bottom:15px;
+}
+
+input{
+  width:100%;
+  padding:15px 16px;
+  border:none;
+  outline:none;
+  border-radius:18px;
+  font-size:16px;
+  font-weight:800;
+  background:#fff;
+  color:#0f172a;
+}
+
+.card{
+  margin-top:15px;
+  padding:22px 14px;
+  border-radius:26px;
+  text-align:center;
+  font-weight:800;
+  overflow:hidden;
+  position:relative;
+  color:#0f172a;
+}
+
+.card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  opacity:.18;
+  background:linear-gradient(120deg,transparent,#fff,transparent);
+  transform:translateX(-120%);
+  animation:shine 3s infinite;
+}
+
+@keyframes shine{
+  0%{transform:translateX(-120%);}
+  50%{transform:translateX(120%);}
+  100%{transform:translateX(120%);}
+}
+
+.pending{
+  background:linear-gradient(145deg,#ffffff,#eff6ff,#f8fafc);
+  border:1px solid rgba(59,130,246,.45);
+  box-shadow:0 18px 45px rgba(59,130,246,.20);
+}
+
+.success{
+  background:linear-gradient(145deg,#ffffff,#dcfce7,#ecfdf5);
+  border:1px solid rgba(34,197,94,.65);
+  box-shadow:0 18px 45px rgba(34,197,94,.24);
+}
+
+.iconBox{
+  width:72px;
+  height:72px;
+  margin:0 auto 12px;
+  border-radius:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:36px;
+  background:#ffffff;
+  box-shadow:0 12px 28px rgba(0,0,0,.12);
+}
+
+.mainText{
+  font-size:clamp(16px,4vw,21px);
+  font-weight:950;
+  margin-bottom:8px;
+}
+
+.note{
+  font-size:14px;
+  color:#64748b;
+  line-height:1.45;
+  margin-bottom:14px;
+}
+
+.amountLine{
+  display:inline-block;
+  padding:10px 13px;
+  border-radius:999px;
+  background:#ffffff;
+  box-shadow:0 8px 24px rgba(0,0,0,.12);
+  font-size:clamp(11px,3vw,15px);
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.statusLine{
+  margin-top:13px;
+  font-size:15px;
+  font-weight:950;
+}
+
+.pendingStatus{color:#dc2626;}
+.successStatus{color:#15803d;}
+
+.complete{
+  margin-top:14px;
+  color:#166534;
+  font-size:16px;
+  font-weight:950;
+}
+
+.error,.loading{
+  margin-top:14px;
+  padding:14px;
+  border-radius:18px;
+  text-align:center;
+  font-weight:900;
+}
+
+.error{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.loading{
+  background:#dcfce7;
+  color:#166534;
+}
+
+@media(max-width:420px){
+  body{padding:8px;}
+  .box{margin-top:62px;padding:12px;border-radius:22px;}
+  .iconBox{width:64px;height:64px;font-size:32px;}
+  .amountLine{font-size:10.7px;padding:9px 8px;}
+}
+</style>
+</head>
+
+<body>
+
+<button class="topIcon" onclick="toggleSearchBox()">🫆</button>
+
+<div class="box">
+  <h2>🗳 Debits History 🛒</h2>
+  <div class="subTitle">Withdrawal Request Status</div>
+
+  <div class="searchArea" id="searchArea">
+    <input type="text" id="studentId" placeholder="🔐 Password Verification needed">
+  </div>
+
+  <div id="result"></div>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwOiNS5ISa9IsVZp5VX01ij5uPVFVSDCY2VOn0apDUNeQasVJabT2VwD3J3kUR_JGE6wg/exec";
+
+const USDT_RATE = 125;
+
+const studentInput = document.getElementById("studentId");
+const searchArea = document.getElementById("searchArea");
+const resultBox = document.getElementById("result");
+
+let searchTimer = null;
+
+window.onload = function(){
+  const savedId = localStorage.getItem("savedDebitStudentId");
+  const isHidden = localStorage.getItem("debitSearchBoxHidden");
+
+  if(savedId){
+    studentInput.value = savedId;
+  }
+
+  searchArea.style.display = isHidden === "yes" ? "none" : "block";
+
+  if(savedId){
+    autoSearch(savedId);
+  }
+};
+
+studentInput.addEventListener("input", function(){
+  const id = studentInput.value.trim();
+
+  localStorage.setItem("savedDebitStudentId", id);
+  clearTimeout(searchTimer);
+
+  searchTimer = setTimeout(function(){
+    if(id !== ""){
+      autoSearch(id);
+    }else{
+      resultBox.innerHTML = "";
+    }
+  }, 500);
+});
+
+function toggleSearchBox(){
+  if(searchArea.style.display === "none"){
+    searchArea.style.display = "block";
+    localStorage.setItem("debitSearchBoxHidden", "no");
+    studentInput.focus();
+  }else{
+    searchArea.style.display = "none";
+    localStorage.setItem("debitSearchBoxHidden", "yes");
+  }
+}
+
+function autoHideSearchBox(){
+  searchArea.style.display = "none";
+  localStorage.setItem("debitSearchBoxHidden", "yes");
+}
+
+function autoSearch(id){
+  resultBox.innerHTML = '<div class="loading">verifying it’s you...</div>';
+
+  fetch(API_URL + "?id=" + encodeURIComponent(id))
+  .then(res => res.json())
+  .then(data => {
+
+    if(!data.found){
+      resultBox.innerHTML = '<div class="error">✖ Wrong. It’s not you 🚫 </div>';
+      return;
+    }
+
+    autoHideSearchBox();
+
+    if(data.results.length === 0){
+      resultBox.innerHTML = '<div class="error">No Withdrawal Found</div>';
+      return;
+    }
+
+    let html = "";
+
+    data.results.forEach(item => {
+      const amount = Number(item.value);
+      const usdt = amount / USDT_RATE;
+      const usdtText = Number.isInteger(usdt) ? usdt : usdt.toFixed(2);
+
+      if(item.status === "Successful"){
+        html += `
+<div class="card success">
+  <div class="iconBox">💸</div>
+
+  <div class="mainText">Transaction Completed Successfully</div>
+
+  <div class="amountLine">
+    💸 Amount: ${item.value} TK | ${usdtText} $ USDT
+  </div>
+
+  <div class="statusLine successStatus">
+    Withdrawal Status: Paid ✅
+  </div>
+
+  <div class="complete">
+    Thank you for using our service.
+  </div>
+</div>
+        `;
+      }else{
+        html += `
+<div class="card pending">
+  <div class="iconBox">💼</div>
+
+  <div class="mainText">We have received your request.</div>
+
+  <div class="note">
+    Your submission is under review.<br>
+    Please wait for confirmation.
+  </div>
+
+  <div class="amountLine">
+    💸 Amount: ${item.value} TK | ${usdtText} $ USDT
+  </div>
+
+  <div class="statusLine pendingStatus">
+    Withdrawal Status: Pending 🔴
+  </div>
+</div>
+        `;
+      }
+    });
+
+    resultBox.innerHTML = html;
+
+  })
+  .catch(() => {
+    resultBox.innerHTML = '<div class="error">Connection Error</div>';
+  });
+}
+</script>
+
+</body>
+</html>
