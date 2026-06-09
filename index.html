@@ -50,25 +50,10 @@ body::after{
   100%{transform:translate(4%,4%) scale(1.08);}
 }
 
-.topIcon{
-  position:fixed;
-  top:12px;
-  right:12px;
-  width:44px;
-  height:44px;
-  border-radius:50%;
-  border:1px solid rgba(255,255,255,.35);
-  background:linear-gradient(135deg,#2563eb,#22c55e);
-  color:white;
-  font-size:19px;
-  z-index:999;
-  cursor:pointer;
-}
-
 .box{
   width:100%;
   max-width:760px;
-  margin:68px auto 0;
+  margin:45px auto 0;
   padding:16px;
   border-radius:26px;
   background:rgba(255,255,255,.10);
@@ -219,7 +204,7 @@ input{
 
 @media(max-width:420px){
   body{padding:8px;}
-  .box{margin-top:62px;padding:12px;border-radius:22px;}
+  .box{margin-top:35px;padding:12px;border-radius:22px;}
   .iconBox{width:64px;height:64px;font-size:32px;}
   .amountLine{font-size:10.7px;padding:9px 8px;}
 }
@@ -227,8 +212,6 @@ input{
 </head>
 
 <body>
-
-<button class="topIcon" onclick="toggleSearchBox()">🫆</button>
 
 <div class="box">
   <h2>🗳 Debits History 🛒</h2>
@@ -254,16 +237,17 @@ let searchTimer = null;
 
 window.onload = function(){
   const savedId = localStorage.getItem("savedDebitStudentId");
-  const isHidden = localStorage.getItem("debitSearchBoxHidden");
+  const verified = localStorage.getItem("debitVerified");
 
   if(savedId){
     studentInput.value = savedId;
   }
 
-  searchArea.style.display = isHidden === "yes" ? "none" : "block";
-
-  if(savedId){
+  if(verified === "yes" && savedId){
+    searchArea.style.display = "none";
     autoSearch(savedId);
+  }else{
+    searchArea.style.display = "block";
   }
 };
 
@@ -271,6 +255,8 @@ studentInput.addEventListener("input", function(){
   const id = studentInput.value.trim();
 
   localStorage.setItem("savedDebitStudentId", id);
+  localStorage.setItem("debitVerified", "no");
+
   clearTimeout(searchTimer);
 
   searchTimer = setTimeout(function(){
@@ -278,24 +264,20 @@ studentInput.addEventListener("input", function(){
       autoSearch(id);
     }else{
       resultBox.innerHTML = "";
+      searchArea.style.display = "block";
     }
   }, 500);
 });
 
-function toggleSearchBox(){
-  if(searchArea.style.display === "none"){
-    searchArea.style.display = "block";
-    localStorage.setItem("debitSearchBoxHidden", "no");
-    studentInput.focus();
-  }else{
-    searchArea.style.display = "none";
-    localStorage.setItem("debitSearchBoxHidden", "yes");
-  }
+function hideSearchBox(){
+  searchArea.style.display = "none";
+  localStorage.setItem("debitVerified", "yes");
 }
 
-function autoHideSearchBox(){
-  searchArea.style.display = "none";
-  localStorage.setItem("debitSearchBoxHidden", "yes");
+function showSearchBox(){
+  searchArea.style.display = "block";
+  localStorage.setItem("debitVerified", "no");
+  studentInput.focus();
 }
 
 function autoSearch(id){
@@ -306,11 +288,13 @@ function autoSearch(id){
   .then(data => {
 
     if(!data.found){
-      resultBox.innerHTML = '<div class="error">✖ Wrong. It’s not you 🚫 </div>';
+      localStorage.setItem("debitVerified", "no");
+      showSearchBox();
+      resultBox.innerHTML = '<div class="error">✖ Wrong. It’s not you 🚫</div>';
       return;
     }
 
-    autoHideSearchBox();
+    hideSearchBox();
 
     if(data.results.length === 0){
       resultBox.innerHTML = '<div class="error">No Withdrawal Found</div>';
@@ -372,6 +356,7 @@ function autoSearch(id){
 
   })
   .catch(() => {
+    showSearchBox();
     resultBox.innerHTML = '<div class="error">Connection Error</div>';
   });
 }
